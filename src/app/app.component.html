@@ -1,0 +1,502 @@
+
+<div class="product-detail-backdrop" *ngIf="selectedProduct" (click)="closeProductDetails()">
+  <section class="product-detail-modal" role="dialog" aria-modal="true" [attr.aria-label]="'Detalles de '+selectedProduct.name" (click)="$event.stopPropagation()">
+    <button class="product-detail-close" type="button" aria-label="Cerrar" (click)="closeProductDetails()">×</button>
+    <div class="product-detail-image-wrap"><img [src]="selectedProduct.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1000&q=85'" [alt]="selectedProduct.name"></div>
+    <div class="product-detail-info">
+      <span class="eyebrow">{{selectedProduct.category_name || selectedProduct.category || 'MHM STORE'}}</span>
+      <h2>{{selectedProduct.name}}</h2>
+      <p class="detail-brand">{{selectedProduct.brand || 'MHM'}} <span *ngIf="selectedProduct.sku">· {{selectedProduct.sku}}</span></p>
+      <strong class="product-detail-price">S/ {{money(selectedProduct.price)}}</strong>
+      <p class="product-detail-description">{{selectedProduct.description || 'Mochila de la colección MHM.'}}</p>
+      <div class="product-detail-specs">
+        <div><small>Disponibilidad</small><b>{{selectedProduct.stock>0?selectedProduct.stock+' unidades':'Agotado'}}</b></div>
+        <div><small>Colores</small><b>{{selectedProduct.colors || 'Consultar disponibilidad'}}</b></div>
+        <div><small>Categoría</small><b>{{selectedProduct.category_name || selectedProduct.category || '—'}}</b></div>
+      </div>
+      <button class="btn primary block" type="button" (click)="closeProductDetails()">Cerrar detalles</button>
+    </div>
+  </section>
+</div>
+<div class="toast" *ngIf="toast">{{toast}}</div>
+
+<header class="store-header">
+  <a class="brand" (click)="go('inicio')">
+    <span class="brand-mark">M</span>
+    <span><b>MHM</b><small>STORE</small></span>
+  </a>
+  <nav>
+    <a (click)="go('inicio')">Inicio</a>
+    <a (click)="go('catalogo')">Mochilas</a>
+    <a (click)="go('catalogo')">Colección</a>
+  </nav>
+  <div class="store-actions">
+    <button class="btn outline" *ngIf="!isLogged" (click)="go('login')">Iniciar sesión</button>
+    <button class="btn outline" *ngIf="isLogged" (click)="go('admin')">Panel de gestión</button>
+    <button class="btn primary" *ngIf="isLogged" (click)="logout()">Salir</button>
+  </div>
+</header>
+
+<main class="public-page" *ngIf="page==='inicio'">
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">DISEÑADAS PARA TU DÍA A DÍA</span>
+      <h1>Tu próxima aventura<br>empieza <em>aquí.</em></h1>
+      <p>Mochilas que combinan diseño, comodidad y resistencia. Encuentra la compañera ideal para cada camino.</p>
+      <div class="hero-buttons">
+        <button class="btn primary" (click)="go('catalogo')">Explorar colección →</button>
+      </div>
+    </div>
+    <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1200&q=85" alt="Mochila MHM">
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <div>
+        <span class="eyebrow">SELECCIÓN MHM</span>
+        <h2>Encuentra tu estilo</h2>
+      </div>
+      <button class="text-button" (click)="go('catalogo')">Ver todas las mochilas →</button>
+    </div>
+
+    <div class="category-grid">
+      <button class="category-card" *ngFor="let c of categories" (click)="categoryFilter=c.name;go('catalogo')">
+        <span class="category-symbol">▧</span>
+        <h3>{{c.name}}</h3>
+        <p>{{c.description}}</p>
+      </button>
+    </div>
+
+    <div class="product-grid">
+      <article class="product-card" *ngFor="let p of products.slice(0,4)">
+        <img [src]="p.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80'" alt="Mochila">
+        <div>
+          <small>{{p.category_name||'MHM'}}</small>
+          <h3>{{p.name}}</h3>
+          <b>S/ {{money(p.price)}}</b>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<main class="public-page" *ngIf="page==='catalogo'">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">COLECCIÓN MHM</span>
+      <h1>Catálogo de mochilas</h1>
+      <p class="muted">Encuentra la mochila ideal para cada ocasión.</p>
+    </div>
+  </div>
+
+  <div class="catalog-tools">
+    <input [(ngModel)]="search" placeholder="Buscar mochila por nombre o marca...">
+    <select [(ngModel)]="categoryFilter">
+      <option>Todas</option>
+      <option *ngFor="let c of categories" [ngValue]="c.name">{{c.name}}</option>
+    </select>
+    <select [(ngModel)]="sort">
+      <option value="name">Ordenar: nombre</option>
+      <option value="priceAsc">Precio: menor a mayor</option>
+      <option value="priceDesc">Precio: mayor a menor</option>
+    </select>
+  </div>
+
+  <div class="product-grid">
+    <article class="product-card product-card-clickable" *ngFor="let p of filteredProducts" (click)="showProductDetails(p)" tabindex="0" (keydown.enter)="showProductDetails(p)">
+      <img [src]="p.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80'" [alt]="p.name">
+      <div>
+        <small>{{p.category_name}} · {{p.brand}}</small>
+        <h3>{{p.name}}</h3>
+        <p class="muted">{{p.description}}</p>
+        <div class="price-row">
+          <b>S/ {{money(p.price)}}</b>
+          <span>{{p.stock>0?p.stock+' disponibles':'Agotado'}}</span>
+        </div>
+        <span class="details-hint">Ver detalles →</span>
+      </div>
+    </article>
+    <p *ngIf="!filteredProducts.length" class="muted">No se encontraron mochilas con esos filtros.</p>
+  </div>
+</main>
+
+<main class="login-wrap" *ngIf="page==='login'">
+  <section class="login-card">
+    <span class="brand-mark">M</span>
+    <span class="eyebrow">ACCESO AL SISTEMA</span>
+    <h1>Bienvenido a MHM Store</h1>
+    <p class="muted">Ingresa con tu cuenta de administrador o trabajador.</p>
+    <label>Correo electrónico</label>
+    <input type="email" [(ngModel)]="email" placeholder="correo@empresa.com">
+    <label>Contraseña</label>
+    <input type="password" [(ngModel)]="password" placeholder="Tu contraseña">
+    <button class="btn primary block" [disabled]="busy" (click)="login()">
+      {{busy?'Ingresando...':'Iniciar sesión'}}
+    </button>
+    <small class="muted">El acceso de trabajadores es creado exclusivamente por el administrador.</small>
+  </section>
+</main>
+
+<main class="admin-layout" *ngIf="page.startsWith('admin')||['productos-admin','trabajadores','trabajador-form','producto-form','compras','ventas','categorias','almacen','reportes'].includes(page)">
+  <aside class="sidebar liquid-sidebar">
+    <a class="brand" (click)="go('admin')">
+      <span class="brand-mark">M</span>
+      <span><b>MHM</b><small>STORE</small></span>
+    </a>
+
+    <div class="side-label">GESTIÓN</div>
+    <a [class.active]="page==='admin'" (click)="go('admin')">▦ Resumen</a>
+    <a *ngIf="hasPermission('products')||isAdmin" [class.active]="page==='productos-admin'||page==='producto-form'" (click)="go('productos-admin')">▣ Productos</a>
+    <a *ngIf="hasPermission('stock')" [class.active]="page==='almacen'" (click)="go('almacen')">▤ Inventario</a>
+    <a *ngIf="isAdmin" [class.active]="page==='categorias'" (click)="go('categorias')">▧ Categorías</a>
+
+    <div class="side-label">OPERACIONES</div>
+    <a *ngIf="hasPermission('sales')" [class.active]="page==='ventas'" (click)="go('ventas')">↗ Ventas</a>
+    <a *ngIf="hasPermission('stock')" [class.active]="page==='compras'" (click)="go('compras')">↙ Compras</a>
+    <a *ngIf="hasPermission('employees')" [class.active]="page==='trabajadores'||page==='trabajador-form'" (click)="go('trabajadores')">♙ Trabajadores</a>
+    <a *ngIf="hasPermission('reports')" [class.active]="page==='reportes'" (click)="go('reportes')">▤ Reportes</a>
+
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <span class="avatar">{{user?.name?.charAt(0)||'A'}}</span>
+        <span>
+          <b>{{user?.name}}</b>
+          <small>{{isAdmin?'Administrador':'Trabajador'}}</small>
+        </span>
+      </div>
+      <button class="btn outline block" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <section class="admin-main">
+    <header class="topbar">
+      <div>
+        <small>MHM STORE / PANEL</small>
+        <h2>{{page==='admin'?'Resumen':page==='productos-admin'?'Productos':page==='producto-form'?'Producto':page==='almacen'?'Inventario':page==='reportes'?'Reportes':page==='categorias'?'Categorías':page==='compras'?'Compras':page==='ventas'?'Ventas':page==='trabajadores'?'Gestión de trabajadores':page==='trabajador-form'?'Cuenta de trabajador':''}}</h2>
+      </div>
+      <span class="muted">{{user?.name}}</span>
+    </header>
+
+    <section class="admin-content" *ngIf="page==='admin'">
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">PANEL DE CONTROL</span>
+          <h1>Bienvenido, {{user?.name}}</h1>
+          <p class="muted">Resumen de operaciones e inventario.</p>
+        </div>
+        <button class="btn primary" *ngIf="hasPermission('products')" (click)="openProduct()">＋ Agregar producto</button>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card"><span>Productos</span><strong>{{products.length}}</strong><small>En catálogo</small></article>
+        <article class="stat-card"><span>Unidades en stock</span><strong>{{stockTotal}}</strong><small>Inventario disponible</small></article>
+        <article class="stat-card"><span>Compras registradas</span><strong>{{purchases.length}}</strong><small>Ingresos de mercadería</small></article>
+        <article class="stat-card"><span>Ventas registradas</span><strong>{{sales.length}}</strong><small>Salidas de inventario</small></article>
+      </div>
+
+      <div class="quick-grid liquid-actions">
+        <button class="panel liquid-action" (click)="go('productos-admin')"><span class="quick-icon">＋</span><span>Agregar / editar productos</span><i>↗</i></button>
+        <button class="panel liquid-action" (click)="go('compras')"><span class="quick-icon">↙</span><span>Registrar compra</span><i>↗</i></button>
+        <button class="panel liquid-action" (click)="go('ventas')"><span class="quick-icon">↗</span><span>Nueva venta</span><i>↗</i></button>
+        <button class="panel liquid-action" *ngIf="isAdmin" (click)="go('trabajadores')"><span class="quick-icon">♙</span><span>Gestionar trabajadores</span><i>↗</i></button>
+      </div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='productos-admin'">
+      <div class="page-heading">
+        <div>
+          <h1>Productos</h1>
+          <p class="muted">Administra mochilas, imágenes, precios, colores y existencias.</p>
+        </div>
+        <button class="btn primary" (click)="openProduct()">＋ Agregar producto</button>
+      </div>
+
+      <input class="search-input" [(ngModel)]="search" placeholder="Buscar producto...">
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Producto</th><th>Marca / categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of products">
+              <td>
+                <div class="product-cell">
+                  <img [src]="p.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100'" alt="Mochila">
+                  <b>{{p.name}}</b>
+                </div>
+              </td>
+              <td>{{p.brand}} / {{p.category_name}}</td>
+              <td>S/ {{money(p.price)}}</td>
+              <td>{{p.stock}}</td>
+              <td>
+                <button class="text-button" (click)="openProduct(p)">Editar</button>
+                <button class="text-button danger" (click)="deleteProduct(p)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='producto-form'">
+      <div class="page-heading">
+        <div>
+          <h1>{{editingProduct?'Editar':'Agregar'}} producto</h1>
+          <p class="muted">Completa la información de la mochila.</p>
+        </div>
+        <button class="btn outline" (click)="go('productos-admin')">Volver</button>
+      </div>
+
+      <div class="form-panel">
+        <div class="form-grid">
+          <label>Nombre<input [(ngModel)]="productForm.name"></label>
+          <label>Marca<input [(ngModel)]="productForm.brand"></label>
+          <label>Categoría>
+            <select [(ngModel)]="productForm.category_id">
+              <option value="">Seleccionar</option>
+              <option *ngFor="let c of categories" [value]="c.id">{{c.name}}</option>
+            </select>
+          </label>
+          <label>SKU<input [(ngModel)]="productForm.sku"></label>
+          <label>Precio de venta (S/)<input type="number" min="0" [(ngModel)]="productForm.price"></label>
+          <label>Costo (S/)<input type="number" min="0" [(ngModel)]="productForm.cost"></label>
+          <label>Stock inicial<input type="number" min="0" [(ngModel)]="productForm.stock"></label>
+          <label>Colores disponibles<input [(ngModel)]="productForm.colors" placeholder="Negro, azul, gris"></label>
+          <label class="wide">Descripción<textarea [(ngModel)]="productForm.description"></textarea></label>
+          <label class="wide">
+            Foto o ficha PDF
+            <input type="file" accept="image/*,.pdf,application/pdf" (change)="onFile($event)">
+            <small class="muted">Formatos: JPG, PNG, WEBP o PDF (máx. 10 MB).</small>
+          </label>
+        </div>
+        <button class="btn primary" (click)="saveProduct()">Guardar producto</button>
+      </div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='categorias'">
+      <div class="page-heading">
+        <div>
+          <h1>Gestión de categorías</h1>
+          <p class="muted">Registra categorías para organizar el catálogo.</p>
+        </div>
+      </div>
+      <div class="form-panel inline-form">
+        <input [(ngModel)]="categoryName" placeholder="Nombre de categoría">
+        <input [(ngModel)]="categoryDescription" placeholder="Descripción">
+        <button class="btn primary" (click)="saveCategory()">＋ Crear categoría</button>
+      </div>
+      <div class="category-grid">
+        <article class="category-card" *ngFor="let c of categories">
+          <h3>{{c.name}}</h3>
+          <p>{{c.description}}</p>
+          <button class="text-button danger" (click)="deleteCategory(c)">Eliminar</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='trabajadores'">
+      <div class="page-heading">
+        <div>
+          <h1>Gestión de trabajadores</h1>
+          <p class="muted">Administra cuentas y permisos de acceso.</p>
+        </div>
+        <button class="btn primary" (click)="openEmployee()">＋ Agregar trabajador</button>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card"><span>Trabajadores activos</span><strong>{{activeEmployees}}</strong></article>
+        <article class="stat-card"><span>Total de cuentas</span><strong>{{employees.length}}</strong></article>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nombre</th><th>Rol</th><th>E-mail</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let e of employees">
+              <td>{{e.name}}</td>
+              <td>{{e.role}}</td>
+              <td>{{e.email}}</td>
+              <td>{{e.active?'Activo':'Inactivo'}}</td>
+              <td>
+                <button class="text-button" (click)="openEmployee(e)">Editar</button>
+                <button class="text-button danger" (click)="deleteEmployee(e)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='trabajador-form'">
+      <div class="page-heading">
+        <div>
+          <h1>{{editingEmployee?'Editar':'Crear'}} cuenta de trabajador</h1>
+          <p class="muted">Solo el administrador puede gestionar estas cuentas.</p>
+        </div>
+        <button class="btn outline" (click)="go('trabajadores')">Volver</button>
+      </div>
+
+      <div class="employee-layout">
+        <div class="form-panel">
+          <div class="form-grid">
+            <label>Nombre completo<input [(ngModel)]="employeeForm.name"></label>
+            <label>Correo electrónico<input type="email" [(ngModel)]="employeeForm.email"></label>
+            <label *ngIf="!editingEmployee">Contraseña<input type="password" [(ngModel)]="employeeForm.password"></label>
+            <label *ngIf="!editingEmployee">Confirmar contraseña<input type="password" [(ngModel)]="employeeForm.confirmPassword"></label>
+            <label>Rol>
+              <select [(ngModel)]="employeeForm.role">
+                <option value="trabajador">Trabajador</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <h3>Permisos de acceso</h3>
+          <p class="muted">Activa únicamente las funciones autorizadas.</p>
+          <label class="switch-row" *ngFor="let item of [{key:'sales',label:'Registro de ventas'},{key:'stock',label:'Gestión de stock y compras'},{key:'products',label:'Agregar / editar productos'},{key:'reports',label:'Ver reportes'},{key:'employees',label:'Administrar trabajadores'}]">
+            <span>{{item.label}}</span>
+            <input type="checkbox" [(ngModel)]="employeeForm.permissions[item.key]">
+          </label>
+        </div>
+      </div>
+      <button class="btn primary" (click)="saveEmployee()">{{editingEmployee?'Guardar cambios':'Crear cuenta'}}</button>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='compras'">
+      <div class="page-heading"><div><span class="eyebrow">ABASTECIMIENTO</span><h1>Registrar compra</h1><p class="muted">Factura de ingreso: agrega todos los productos del proveedor en una sola operación.</p></div><div class="invoice-total"><small>TOTAL DE FACTURA</small><strong>S/ {{money(purchaseGrandTotal)}}</strong></div></div>
+      <div class="form-panel invoice-panel">
+        <div class="invoice-meta">
+          <label>Proveedor<input [(ngModel)]="purchaseForm.supplier" placeholder="Nombre del proveedor"></label><label>Marca<input [(ngModel)]="purchaseForm.brand" placeholder="Marca / distribuidor"></label><label>Fecha<input type="date" [(ngModel)]="purchaseForm.date"></label><label>Estado<select [(ngModel)]="purchaseForm.status"><option>Recibido</option><option>Pendiente</option><option>Anulado</option></select></label><label class="invoice-detail">Detalle / N.º de factura<input [(ngModel)]="purchaseForm.detail" placeholder="Ej. F001-000245"></label>
+        </div>
+        <div class="invoice-table-heading"><div><h3>Detalle de productos</h3><p class="muted">Registra cantidades y costo unitario por producto.</p></div><button class="btn outline small" type="button" (click)="addPurchaseLine()">＋ Agregar fila</button></div>
+        <div class="table-wrap invoice-table-wrap"><table class="invoice-table"><thead><tr><th>#</th><th>Producto</th><th>Stock actual</th><th>Cantidad</th><th>Costo unitario (S/)</th><th>Subtotal</th><th></th></tr></thead><tbody><tr *ngFor="let line of purchaseLines;let i=index"><td>{{i+1}}</td><td class="purchase-product-cell"><input class="invoice-product-search" type="search" [(ngModel)]="line.product_search" [attr.list]="'purchase-products-'+i" placeholder="Buscar producto..." autocomplete="off" (change)="selectPurchaseProduct(line)"><datalist [id]="'purchase-products-'+i"><option *ngFor="let p of products" [value]="p.name"></option></datalist><small class="selected-product-name" *ngIf="line.product_id">{{productNameForPurchase(line.product_id)}}</small></td><td><span class="stock-pill">{{stockForPurchase(line.product_id)}} un.</span></td><td><input class="invoice-number" type="number" min="1" [(ngModel)]="line.quantity"></td><td><input class="invoice-number" type="number" min="0" step="0.01" [(ngModel)]="line.unit_cost"></td><td><b>S/ {{money((+line.quantity||0)*(+line.unit_cost||0))}}</b></td><td><button class="remove-line" type="button" title="Quitar fila" (click)="removePurchaseLine(i)">×</button></td></tr></tbody></table></div>
+        <div class="invoice-footer"><span>{{purchaseLines.length}} línea(s) de producto</span><div><small>Total a pagar</small><strong>S/ {{money(purchaseGrandTotal)}}</strong></div></div><button class="btn primary" type="button" (click)="savePurchase()">Registrar factura e ingresar stock</button>
+      </div>
+      <div class="panel purchase-history"><div class="panel-heading"><div><h3>Historial de compras</h3><p class="muted">Detalle de ingresos registrados.</p></div></div><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Proveedor</th><th>Cantidad</th><th>Monto</th><th>Estado</th></tr></thead><tbody><tr *ngFor="let p of purchases"><td>{{p.date|date:'dd/MM/yyyy'}}</td><td>{{p.product_name}}</td><td>{{p.supplier}}</td><td>{{p.quantity}}</td><td>S/ {{money(p.amount)}}</td><td>{{p.status}}</td></tr></tbody></table></div></div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='ventas'">
+      <div class="page-heading">
+        <div>
+          <h1>Nueva venta</h1>
+          <p class="muted">Agrega mochilas al carrito y confirma la operación.</p>
+        </div>
+      </div>
+
+      <div class="sale-layout">
+        <div>
+          <h3>Seleccionar productos</h3>
+          <input class="search-input" [(ngModel)]="search" placeholder="Buscar mochila...">
+          <div class="sale-products">
+            <article class="sale-product" *ngFor="let p of products">
+              <img class="sale-product-image" [src]="p.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400'" [alt]="p.name" (click)="showProductDetails(p)">
+              <b>{{p.name}}</b>
+              <span>S/ {{money(p.price)}} · Stock {{p.stock}}</span>
+              <div class="sale-product-actions">
+                <button type="button" class="btn outline sale-detail-btn" (click)="showProductDetails(p)">Ver detalles</button>
+                <button type="button" class="btn primary sale-add-btn" [disabled]="p.stock<1" (click)="addSaleItem(p)">＋ Agregar</button>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <h3>Carrito de venta</h3>
+          <p *ngIf="!saleItems.length" class="muted">Aún no agregaste productos.</p>
+
+          <div class="cart-line" *ngFor="let x of saleItems;let i=index">
+            <div>
+              <b>{{x.name}}</b>
+              <small>S/ {{money(x.price)}} c/u</small>
+              <div>
+                <button (click)="changeSaleQty(i,-1)">−</button>
+                {{x.quantity}}
+                <button (click)="changeSaleQty(i,1)">+</button>
+              </div>
+            </div>
+            <b>S/ {{money(x.quantity*x.price)}}</b>
+          </div>
+
+          <hr>
+          <label>Nombre del cliente (opcional)<input [(ngModel)]="saleForm.customer_name" placeholder="Consumidor final"></label>
+          <label>Comprobante>
+            <select [(ngModel)]="saleForm.document_type">
+              <option value="boleta">Boleta</option>
+              <option value="factura">Factura</option>
+            </select>
+          </label>
+          <label>Medio de pago>
+            <select [(ngModel)]="saleForm.payment_method">
+              <option>Efectivo</option>
+              <option>Yape</option>
+              <option>Plin</option>
+              <option>Tarjeta</option>
+              <option>Transferencia</option>
+            </select>
+          </label>
+
+          <div class="total-line"><span>Subtotal</span><b>S/ {{money(saleTotal)}}</b></div>
+          <div class="total-line"><span>Total</span><strong>S/ {{money(saleTotal)}}</strong></div>
+          <button class="btn primary block" (click)="saveSale()">Confirmar venta y generar PDF</button>
+          <small class="muted">PDF interno de demostración; no es comprobante electrónico autorizado por SUNAT.</small>
+        </div>
+      </div>
+
+      <h3>Ventas registradas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Comprobante</th><th>Cliente</th><th>Total</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let s of sales">
+              <td>{{s.created_at|date:'dd/MM/yyyy HH:mm'}}</td>
+              <td>{{s.document_type}}</td>
+              <td>{{s.customer_name||'Consumidor final'}}</td>
+              <td>S/ {{money(s.total)}}</td>
+              <td><button class="text-button" (click)="downloadReceipt(s.id)">Descargar PDF</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='reportes'">
+      <div class="page-heading"><div><span class="eyebrow">ANÁLISIS DEL NEGOCIO</span><h1>Reportes y rendimiento</h1><p class="muted">Compras, ventas y productos destacados a partir de tus registros.</p></div><button class="btn primary" (click)="exportMonthlyExcel()">↓ Exportar reporte Excel</button></div>
+      <div class="stats-grid"><article class="stat-card report-stat"><div class="stat-top"><span>Ventas acumuladas</span><span class="stat-icon green">↗</span></div><strong>S/ {{money(salesTotal)}}</strong><small>{{sales.length}} operaciones registradas</small></article><article class="stat-card report-stat"><div class="stat-top"><span>Compras acumuladas</span><span class="stat-icon gold">↙</span></div><strong>S/ {{money(purchasesTotal)}}</strong><small>{{purchases.length}} líneas registradas</small></article><article class="stat-card report-stat"><div class="stat-top"><span>Unidades actuales</span><span class="stat-icon blue">▣</span></div><strong>{{stockTotal}}</strong><small>{{products.length}} productos en catálogo</small></article><article class="stat-card report-stat"><div class="stat-top"><span>Stock bajo</span><span class="stat-icon violet">!</span></div><strong>{{lowStockCount}}</strong><small>Productos con menos de 10 unidades</small></article></div>
+      <div class="panel report-chart-panel"><div class="panel-heading"><div><h3>Compras vs. ventas</h3><p class="muted">Comparación mensual de los últimos cinco meses · S/</p></div><div class="chart-legend"><span><i class="legend-purchase"></i> Compras</span><span><i class="legend-sales"></i> Ventas</span></div></div><div class="paired-chart"><div class="paired-month" *ngFor="let m of lastFiveMonths"><div class="paired-bars"><div class="paired-bar purchase-bar" [style.height.%]="m.purchases/m.max*100"><span>S/ {{money(m.purchases)}}</span></div><div class="paired-bar sales-bar" [style.height.%]="m.sales/m.max*100"><span>S/ {{money(m.sales)}}</span></div></div><small>{{m.label}}</small></div></div><div class="chart-footnote">Cada par de barras corresponde al mismo mes. Los meses sin operaciones aparecen en cero.</div></div>
+      <div class="dashboard-grid report-bottom-grid"><div class="panel best-panel"><div class="panel-heading"><div><h3>Top 5 productos más vendidos</h3><p class="muted">Ordenados por unidades vendidas.</p></div><span class="badge">POPULARIDAD</span></div><div class="best-item" *ngFor="let item of popularProducts;let i=index"><span class="rank-number">{{i+1}}</span><div class="best-info"><b>{{item.name}}</b><small>{{item.quantity}} unidades vendidas</small></div><strong>{{item.quantity}} un.</strong></div><div class="empty-report" *ngIf="!popularProducts.length">Aún no hay ventas registradas para calcular popularidad.</div></div><div class="panel"><div class="panel-heading"><div><h3>Resumen por mes</h3><p class="muted">Últimos 12 meses · exportable a Excel.</p></div></div><div class="monthly-list"><div *ngFor="let m of monthlyReport.slice(-5)"><span>{{m.month}}</span><b>V S/ {{money(m.sales)}}</b><b>C S/ {{money(m.purchases)}}</b></div></div></div></div>
+    </section>
+
+    <section class="admin-content" *ngIf="page==='almacen'">
+      <div class="page-heading">
+        <div>
+          <h1>Inventario</h1>
+          <p class="muted">Existencias actualizadas por compras y ventas.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card"><span>Productos</span><strong>{{products.length}}</strong></article>
+        <article class="stat-card"><span>Unidades disponibles</span><strong>{{stockTotal}}</strong></article>
+        <article class="stat-card"><span>Stock bajo</span><strong>{{lowStockCount}}</strong></article>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mochila</th><th>Categoría</th><th>Stock</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of products">
+              <td><div class="product-cell inventory-product-cell"><img [src]="p.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200'" [alt]="p.name"><b>{{p.name}}</b></div></td>
+              <td>{{p.category_name}}</td>
+              <td>{{p.stock}}</td>
+              <td>{{p.stock<10?'Reponer':'Correcto'}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</main>
+

@@ -1,0 +1,3 @@
+import { Component, Input } from '@angular/core';
+@Component({selector:'mhm-field',standalone:true,template:`<label class="field"><span>{{label}}</span><input [type]="type" [placeholder]="placeholder" [value]="value" [readonly]="readonly"></label>`,styles:[`.field{display:grid;gap:7px;font:600 12px 'DM Sans',sans-serif;color:#51414a}.field input{height:42px;border:1px solid #eadde1;border-radius:9px;padding:0 12px;outline:none;background:#fff;color:#33242a;font:400 13px 'DM Sans',sans-serif;transition:border .2s,box-shadow .2s}.field input:focus{border-color:var(--wine);box-shadow:0 0 0 3px #7c1d3a15}`]})
+export class UiFieldComponent {@Input() label='Campo';@Input() placeholder='Escribe aquí';@Input() value='';@Input() type='text';@Input() readonly=false;}
