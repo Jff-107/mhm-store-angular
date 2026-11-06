@@ -60,6 +60,24 @@
   <section class="store-location" aria-labelledby="location-title"><div class="location-heading"><span class="eyebrow">VEN A CONOCERNOS</span><h2 id="location-title">Te esperamos en Arequipa</h2><p>Cercado de Arequipa · MHM STORE · Calle San Juan de Dios 521</p></div><div class="location-cards"><article class="location-card"><h3>UBICACIÓN DE MHM STORE</h3><iframe title="Mapa de MHM STORE en Calle San Juan de Dios 521, Arequipa" src="https://maps.google.com/maps?q=Calle%20San%20Juan%20de%20Dios%20521%2C%20Arequipa%2C%20Peru&z=16&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><a href="https://www.google.com/maps/search/?api=1&query=Calle+San+Juan+de+Dios+521%2C+Arequipa%2C+Peru" target="_blank" rel="noopener">Abrir ubicación en Maps ↗</a></article><article class="location-card"><h3>ENTRADA A LA TIENDA MHM</h3><img src="/images/tienda-fachada.jpg" alt="Fachada de la tienda MHM"></article><article class="location-card"><h3>TUTORIAL DE CÓMO LLEGAR</h3><div class="directions-video"><iframe title="Video provisional sobre cómo llegar a MHM STORE" src="https://www.youtube.com/embed/ysz5S6PUM-U" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></article></div></section>
 </main>
 
+<footer class="store-info-footer" *ngIf="page==='inicio'">
+  <div class="store-info-inner">
+    <div class="store-info-brand"><span class="brand-mark">M</span><div><b>MHM STORE</b><small>Datos de contacto</small></div></div>
+    <section class="footer-hours" aria-label="Horario de atención">
+      <h2>Horario de atención</h2>
+      <p><b>Lunes y sábados</b><span>9:00 a. m. – 8:00 p. m.</span></p>
+      <p><b>Domingos</b><span>9:00 a. m. – 5:00 p. m.</span></p>
+    </section>
+    <section class="footer-contact" aria-label="Contacto y dirección">
+      <h2>Contacto</h2>
+      <p><b>Teléfono</b><a href="tel:+51915107094">915 107 094</a></p>
+      <p><b>Correo</b><a href="mailto:marielahuancamamani&#64;hotmail.com">marielahuancamamani&#64;hotmail.com</a></p>
+      <p><b>Dirección</b><a href="https://www.google.com/maps/search/?api=1&query=Calle+San+Juan+de+Dios+521%2C+Cercado+de+Arequipa%2C+Per%C3%BA" target="_blank" rel="noopener">Calle San Juan de Dios 521, Cercado de Arequipa</a></p>
+    </section>
+  </div>
+  <div class="store-info-bottom">© MHM STORE · Arequipa</div>
+</footer>
+
 <app-ui-library *ngIf="page==='libreria'" (back)="go('inicio')"></app-ui-library>
 
 <main class="public-page catalog-page" *ngIf="page==='catalogo'">

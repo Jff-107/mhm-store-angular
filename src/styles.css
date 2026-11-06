@@ -50,6 +50,21 @@ button,a,.panel,.stat-card,.store-product,.admin-product-card{transition:transfo
 :root{--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--radius-control:8px;--radius-card:14px;--radius-panel:18px;--shadow-control:0 8px 20px rgba(105,20,47,.14);--shadow-card:0 14px 36px rgba(48,20,31,.1);--motion-fast:160ms;--motion-standard:240ms;--motion-enter:420ms;--focus-ring:rgba(104,20,47,.28);--state-success:#237443;--state-warning:#9a6724;--state-danger:#b4233f;--state-info:#315a91}
 .store-header nav .ui-nav-link{padding:0;border:0;background:transparent;color:#667169;font:inherit;font-size:12px;cursor:pointer}
 .store-header nav .ui-nav-link:hover{color:var(--green);font-weight:700}
+.store-info-footer{background:var(--wine);color:#fff;padding:38px clamp(20px,7vw,100px) 0}
+.store-info-inner{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1.35fr;gap:42px;padding-bottom:32px}
+.store-info-brand{display:flex;align-items:flex-start;gap:13px}
+.store-info-brand .brand-mark{background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)}
+.store-info-brand b,.store-info-brand small{display:block}
+.store-info-brand b{font:800 15px 'Manrope',sans-serif;letter-spacing:.08em}
+.store-info-brand small{margin-top:7px;color:#f0dbe2;font-size:11px}
+.store-info-footer h2{margin:0 0 14px;font:700 13px 'Manrope',sans-serif;letter-spacing:.02em;color:#fff}
+.store-info-footer p{display:grid;gap:4px;margin:0 0 12px;font-size:12px;line-height:1.5}
+.store-info-footer p b{color:#f0dbe2;font-size:10px;font-weight:600}
+.store-info-footer a{width:fit-content;color:#fff;text-decoration:none;overflow-wrap:anywhere}
+.store-info-footer a:hover{text-decoration:underline;text-underline-offset:3px}
+.store-info-bottom{max-width:1240px;margin:0 auto;padding:14px 0;border-top:1px solid rgba(255,255,255,.2);color:#f0dbe2;font-size:10px}
+@media(max-width:700px){.store-info-inner{grid-template-columns:1fr 1fr;gap:27px 20px}.store-info-brand{grid-column:1/-1}.store-info-footer{padding:30px 22px 0}}
+@media(max-width:430px){.store-info-inner{grid-template-columns:1fr}.store-info-brand{grid-column:auto}}
 /* Avisos flotantes adaptables, filtros y estados de inventario */
 .toast{position:fixed;top:20px;right:20px;bottom:auto;left:auto;z-index:1000;width:max-content;max-width:min(420px,calc(100vw - 32px));box-sizing:border-box;padding:13px 17px;background:#481226;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:12px;box-shadow:0 12px 34px rgba(72,18,38,.24);font-size:13px;line-height:1.45;white-space:normal;overflow-wrap:anywhere;animation:toastIn .2s ease-out}
 .report-filter-panel{display:flex;align-items:end;gap:14px;flex-wrap:wrap;padding:18px 20px;margin-bottom:20px}
