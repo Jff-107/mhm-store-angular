@@ -27,60 +27,39 @@
   </a>
   <nav>
     <a (click)="go('inicio')">Inicio</a>
-    <a (click)="go('catalogo')">Mochilas</a>
-    <a (click)="go('catalogo')">Colección</a>
+    <a (click)="scrollToSection('destacados')">Mochilas</a>
+    <a (click)="scrollToSection('conocenos')">Conócenos</a>
+    <a (click)="scrollToSection('destacados')">Más vendidos</a>
+    <details class="category-menu"><summary>Categorías⌄</summary><div class="category-dropdown"><a *ngFor="let c of categories" (click)="categoryFilter=c.name;go('catalogo')">{{c.name}}</a><span *ngIf="!categories.length">Sin categorías</span></div></details>
   </nav>
   <div class="store-actions">
+    <button class="cart-button" type="button" (click)="cartOpen=!cartOpen" aria-label="Abrir carrito">🛒 <span>Carrito</span><b>{{cartCount}}</b></button>
     <button class="btn outline" *ngIf="!isLogged" (click)="go('login')">Iniciar sesión</button>
     <button class="btn outline" *ngIf="isLogged" (click)="go('admin')">Panel de gestión</button>
     <button class="btn primary" *ngIf="isLogged" (click)="logout()">Salir</button>
   </div>
+  <aside class="store-cart" *ngIf="cartOpen"><div class="cart-head"><b>Tu carrito</b><button (click)="cartOpen=false">×</button></div><p *ngIf="!cart.length" class="muted">Aún no agregas productos.</p><div class="store-cart-line" *ngFor="let item of cart"><img [src]="item.image_url" [alt]="item.name"><div><b>{{item.name}}</b><small>S/ {{money(item.price)}}</small><div class="mini-qty"><button (click)="changeCartQty(item,-1)">−</button>{{item.quantity}}<button (click)="changeCartQty(item,1)">+</button></div></div></div><div class="store-cart-total" *ngIf="cart.length"><span>Total</span><b>S/ {{money(cartTotal)}}</b></div></aside>
 </header>
 
 <main class="public-page" *ngIf="page==='inicio'">
-  <section class="hero">
-    <div class="hero-copy">
-      <span class="eyebrow">DISEÑADAS PARA TU DÍA A DÍA</span>
-      <h1>Tu próxima aventura<br>empieza <em>aquí.</em></h1>
-      <p>Mochilas que combinan diseño, comodidad y resistencia. Encuentra la compañera ideal para cada camino.</p>
-      <div class="hero-buttons">
-        <button class="btn primary" (click)="go('catalogo')">Explorar colección →</button>
-      </div>
+  <section class="store-carousel" aria-label="Novedades MHM">
+    <div class="carousel-slide" *ngFor="let slide of slides;let i=index" [class.current]="activeSlide===i" [style.background-image]="'linear-gradient(90deg,rgba(27,16,20,.72),rgba(27,16,20,.08)),url(' + slide.image + ')'">
+      <div class="carousel-copy"><span class="eyebrow">MHM STORE · MOCHILAS PARA TI</span><h1>{{slide.title}}</h1><p>{{slide.copy}}</p><button class="btn primary" (click)="scrollToSection('destacados')">Descubre la colección →</button></div>
     </div>
-    <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1200&q=85" alt="Mochila MHM">
+    <button class="carousel-arrow prev" aria-label="Imagen anterior" (click)="prevSlide()">‹</button><button class="carousel-arrow next" aria-label="Imagen siguiente" (click)="nextSlide()">›</button>
+    <div class="carousel-dots"><button *ngFor="let slide of slides;let i=index" [class.active]="activeSlide===i" [attr.aria-label]="'Ir a imagen '+(i+1)" (click)="activeSlide=i"></button></div>
   </section>
 
-  <section class="section">
-    <div class="section-title">
-      <div>
-        <span class="eyebrow">SELECCIÓN MHM</span>
-        <h2>Encuentra tu estilo</h2>
-      </div>
-      <button class="text-button" (click)="go('catalogo')">Ver todas las mochilas →</button>
-    </div>
-
-    <div class="category-grid">
-      <button class="category-card" *ngFor="let c of categories" (click)="categoryFilter=c.name;go('catalogo')">
-        <span class="category-symbol">▧</span>
-        <h3>{{c.name}}</h3>
-        <p>{{c.description}}</p>
-      </button>
-    </div>
-
-    <div class="product-grid">
-      <article class="product-card" *ngFor="let p of products.slice(0,4)">
-        <img [src]="p.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80'" alt="Mochila">
-        <div>
-          <small>{{p.category_name||'MHM'}}</small>
-          <h3>{{p.name}}</h3>
-          <b>S/ {{money(p.price)}}</b>
-        </div>
-      </article>
-    </div>
+  <section class="section featured-section" id="destacados">
+    <div class="section-title"><div><span class="eyebrow">SELECCIÓN MHM</span><h2>Más vendidos y destacados</h2><p class="muted">Diseñados para acompañarte en cada aventura.</p></div><button class="text-button" (click)="go('catalogo')">Ver todo el catálogo →</button></div>
+    <div class="product-grid featured-grid"><article class="product-card featured-card" *ngFor="let p of products.slice(0,8)"><img [src]="p.image_url || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80'" [alt]="p.name" (click)="showProductDetails(p)"><div><small>{{p.category_name||'MHM'}} · {{p.brand||'MHM'}}</small><h3>{{p.name}}</h3><p>{{p.description}}</p><div class="price-row"><b>S/ {{money(p.price)}}</b><button class="add-btn" aria-label="Agregar al carrito" (click)="addToCart(p)">+</button></div></div></article></div>
   </section>
+
+  <section class="about-store" id="conocenos"><div class="about-copy"><span class="eyebrow">VENTAS AL POR MAYOR Y MENOR</span><h2>Encuentra tu próxima mochila en nuestra tienda</h2><p>📍 Cercado de Arequipa – tienda MHM STORE – Calle San Juan de Dios 521</p><a class="btn primary" href="https://wa.me/?text=Hola%2C%20quisiera%20informaci%C3%B3n%20sobre%20MHM%20STORE" target="_blank" rel="noopener">ESCRÍBENOS AL WHATSAPP</a></div><div class="about-orbits"><div class="about-circle large-circle" [style.transform]="'translateY('+(-scrollProgress*34)+'px)'"><img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1000&q=85" alt="Mochilas en MHM STORE"></div><div class="about-circle outlined-circle" [style.transform]="'translate('+((scrollProgress)*70)+'px,'+((1-scrollProgress)*45-20)+'px)'"><img src="https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=900&q=85" alt="Colección de mochilas"></div></div></section>
+  <section class="store-location" aria-labelledby="location-title"><div class="location-heading"><span class="eyebrow">VEN A CONOCERNOS</span><h2 id="location-title">Te esperamos en Arequipa</h2><p>Cercado de Arequipa · MHM STORE · Calle San Juan de Dios 521</p></div><div class="location-cards"><article class="location-card"><h3>UBICACIÓN DE MHM STORE</h3><iframe title="Mapa de MHM STORE en Calle San Juan de Dios 521, Arequipa" src="https://maps.google.com/maps?q=Calle%20San%20Juan%20de%20Dios%20521%2C%20Arequipa%2C%20Peru&z=16&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><a href="https://www.google.com/maps/search/?api=1&query=Calle+San+Juan+de+Dios+521%2C+Arequipa%2C+Peru" target="_blank" rel="noopener">Abrir ubicación en Maps ↗</a></article><article class="location-card"><h3>ENTRADA A LA TIENDA MHM</h3><img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=85" alt="Imagen provisional de la entrada de la tienda"></article><article class="location-card"><h3>TUTORIAL DE CÓMO LLEGAR</h3><div class="directions-video"><iframe title="Video provisional sobre cómo llegar a MHM STORE" src="https://www.youtube.com/embed/ysz5S6PUM-U" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></article></div></section>
 </main>
 
-<main class="public-page" *ngIf="page==='catalogo'">
+<main class="public-page catalog-page" *ngIf="page==='catalogo'">
   <div class="page-heading">
     <div>
       <span class="eyebrow">COLECCIÓN MHM</span>
@@ -121,20 +100,20 @@
 </main>
 
 <main class="login-wrap" *ngIf="page==='login'">
-  <section class="login-card">
-    <span class="brand-mark">M</span>
-    <span class="eyebrow">ACCESO AL SISTEMA</span>
-    <h1>Bienvenido a MHM Store</h1>
-    <p class="muted">Ingresa con tu cuenta de administrador o trabajador.</p>
-    <label>Correo electrónico</label>
-    <input type="email" [(ngModel)]="email" placeholder="correo@empresa.com">
-    <label>Contraseña</label>
-    <input type="password" [(ngModel)]="password" placeholder="Tu contraseña">
-    <button class="btn primary block" [disabled]="busy" (click)="login()">
-      {{busy?'Ingresando...':'Iniciar sesión'}}
-    </button>
-    <small class="muted">El acceso de trabajadores es creado exclusivamente por el administrador.</small>
-  </section>
+  <div class="login-presentation"><div class="login-video-card"><video [src]="loginVideos[activeLoginVideo]" autoplay muted playsinline (ended)="nextLoginVideo()" poster="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=900&q=85"></video><span class="video-caption"><b>MHM STORE</b><small>Diseño para acompañarte</small></span></div>
+    <section class="login-card">
+      <span class="brand-mark">M</span>
+      <span class="eyebrow">ACCESO AL SISTEMA</span>
+      <h1>Bienvenido a MHM Store</h1>
+      <p class="muted">Ingresa con tu cuenta de administrador o trabajador.</p>
+      <label>Correo electrónico</label>
+      <input type="email" [(ngModel)]="email" placeholder="correo@empresa.com">
+      <label>Contraseña</label>
+      <input type="password" [(ngModel)]="password" placeholder="Tu contraseña">
+      <button class="btn primary block" [disabled]="busy" (click)="login()">{{busy?'Ingresando...':'Iniciar sesión'}}</button>
+      <small class="muted">El acceso de trabajadores es creado exclusivamente por el administrador.</small>
+    </section>
+  </div>
 </main>
 
 <main class="admin-layout" *ngIf="page.startsWith('admin')||['productos-admin','trabajadores','trabajador-form','producto-form','compras','ventas','categorias','almacen','reportes'].includes(page)">

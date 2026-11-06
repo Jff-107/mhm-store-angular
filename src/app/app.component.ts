@@ -1,20 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({selector:'app-root',standalone:true,imports:[CommonModule,FormsModule],templateUrl:'./app.component.html'})
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
  page=localStorage.getItem('mhm-page')||'inicio'; token=localStorage.getItem('mhm-token')||''; user:any=JSON.parse(localStorage.getItem('mhm-user')||'null'); toast=''; busy=false;
  products:any[]=[]; categories:any[]=[]; employees:any[]=[]; purchases:any[]=[]; sales:any[]=[]; cart:any[]=[]; selectedProduct:any=null;
  search=''; categoryFilter='Todas'; sort='name'; activeTab='';
  email='admin@mhmstore.pe'; password='Admin123*';
+ loginVideos=['/videos/login/11760015-uhd_4096_2160_30fps.mp4','/videos/login/12259480_3840_2160_25fps.mp4','/videos/login/14776390_3840_2160_30fps.mp4','/videos/login/17741852-uhd_2160_3840_24fps.mp4','/videos/login/20453025-uhd_3840_2160_30fps.mp4']; activeLoginVideo=0;
+ slides=[
+  {image:'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1800&q=85',title:'Lista para cada camino',copy:'Diseño y comodidad que te acompañan todos los días.'},
+  {image:'https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=1800&q=85',title:'Tu estilo, tu ritmo',copy:'Encuentra una mochila que hable de ti.'},
+  {image:'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=1800&q=85',title:'Sal a explorar',copy:'Espacio, resistencia y libertad para tu próxima aventura.'}
+ ]; activeSlide=0; cartOpen=false; cartCount=0; private carouselTimer:any; scrollProgress=0;
  productForm:any={name:'',brand:'',category_id:'',description:'',price:0,cost:0,stock:0,colors:'',sku:''}; productFile:File|null=null; editingProduct:any=null;
  categoryName=''; categoryDescription=''; employeeForm:any={name:'',email:'',password:'',confirmPassword:'',role:'trabajador',permissions:{sales:true,stock:true,products:false,reports:false,employees:false}}; editingEmployee:any=null;
  purchaseForm:any={brand:'',supplier:'',date:new Date().toISOString().slice(0,10),detail:'',status:'Recibido'}; purchaseLines:any[]=[{product_id:'',quantity:1,unit_cost:0}];
  saleForm:any={customer_name:'',document_type:'boleta',payment_method:'Efectivo'}; saleItems:any[]=[];
  private keys={products:'mhm-products',categories:'mhm-categories',employees:'mhm-employees',purchases:'mhm-purchases',sales:'mhm-sales'};
  constructor(){}
- ngOnInit(){this.seedData();this.loadPublic();if(this.page.startsWith('admin')||['productos-admin','producto-form','trabajadores','trabajador-form','compras','ventas','categorias','almacen','reportes'].includes(this.page)){if(this.isLogged)this.loadAdmin();else this.go('login');}}
+ ngOnInit(){this.seedData();this.loadPublic();this.refreshCartCount();this.carouselTimer=setInterval(()=>this.nextSlide(),10000);if(this.page.startsWith('admin')||['productos-admin','producto-form','trabajadores','trabajador-form','compras','ventas','categorias','almacen','reportes'].includes(this.page)){if(this.isLogged)this.loadAdmin();else this.go('login');}}
+ ngOnDestroy(){clearInterval(this.carouselTimer)}
+ @HostListener('window:scroll') onWindowScroll(){this.scrollProgress=Math.min(1,Math.max(0,(window.scrollY-250)/650))}
+ nextSlide(){this.activeSlide=(this.activeSlide+1)%this.slides.length}
+ nextLoginVideo(){this.activeLoginVideo=(this.activeLoginVideo+1)%this.loginVideos.length}
+ prevSlide(){this.activeSlide=(this.activeSlide+this.slides.length-1)%this.slides.length}
+ refreshCartCount(){try{this.cart=JSON.parse(localStorage.getItem('mhm-store-cart')||'[]')}catch{this.cart=[]}this.cartCount=this.cart.reduce((n,x)=>n+Number(x.quantity||0),0)}
+ addToCart(p:any){const item=this.cart.find(x=>x.id===p.id);if(item)item.quantity++;else this.cart.push({...p,quantity:1});localStorage.setItem('mhm-store-cart',JSON.stringify(this.cart));this.refreshCartCount();this.notify(`${p.name} agregado al carrito`)}
+ changeCartQty(p:any,delta:number){p.quantity+=delta;if(p.quantity<1)this.cart=this.cart.filter(x=>x.id!==p.id);localStorage.setItem('mhm-store-cart',JSON.stringify(this.cart));this.refreshCartCount()}
+ get cartTotal(){return this.cart.reduce((n,x)=>n+Number(x.price)*Number(x.quantity),0)}
+ scrollToSection(id:string){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
  private read(key:string):any[]{try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return []}}
  private write(key:string,value:any[]){localStorage.setItem(key,JSON.stringify(value))}
  private seedData(){
